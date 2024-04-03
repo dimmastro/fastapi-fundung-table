@@ -79,7 +79,7 @@ def get_json_data(request: Request, doll: int=100):
                 fee_delta = 0
                 fee_trade = 0.10 / 100 * doll
                 fee_crank = 0.20
-                funding_rate_max_annualized = float(status["long_funding"]["config"]["funding_rate_max_annualized"])
+                funding_rate_max_annualized = float(status["config"]["funding_rate_max_annualized"])
                 short100_funding_rate_max_annualized = funding_rate_max_annualized * float(status["long_usd"]) / (float(status["long_usd"]) + float(status["short_usd"]) + doll)
                 short100 = - short100_funding_rate_max_annualized * float(status["long_usd"]) / (float(status["short_usd"]) * 1 + doll)
                 if (float(status["long_funding"]) == 0):
