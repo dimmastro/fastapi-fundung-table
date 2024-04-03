@@ -54,7 +54,7 @@ chains = {
 
 
 @app.get("/fund", response_class=HTMLResponse)
-def get_json_data(request: Request, doll: int=100, step: int=20):
+def get_json_data(request: Request, doll: int=1000, step: int=50):
     data = []
     data_opt = []
     for i, chain in chains.items():
@@ -117,7 +117,7 @@ def get_json_data(request: Request, doll: int=100, step: int=20):
 
     # print (data)
     # print (data_opt)
-    data_opt = opt_doll(data_opt, total_step=1000, step=step)
+    data_opt = opt_doll(data_opt, total_step=doll, step=step)
     data_opt = sorted(data_opt, key=lambda x: x[9], reverse=False)
     for i in range(len(data_opt)):
         data_opt[i] = (data_opt[i][:2] + (round(data_opt[i][2]*100),)+ (round(data_opt[i][3]*100),) + (round(data_opt[i][4]*100),) + (round(data_opt[i][5]),) + (round(data_opt[i][6]),) + (round(data_opt[i][7]),) + (round(data_opt[i][8]),) + (round(data_opt[i][9]*100),))
