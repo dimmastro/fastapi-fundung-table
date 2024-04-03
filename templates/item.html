@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FastAPI</title>
+    <style>
+        table {
+            font-family: Arial, sans-serif;
+            border-collapse: collapse;
+<!--            width: 100%;-->
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: right;
+            padding: 8px;
+
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <form action="/fund" method="get">
+        <label for="doll">Enter amount in USD:</label>
+        <input type="text" id="doll" name="doll" value="{{ doll }}">
+        <button type="submit">OK</button>
+    </form>
+    <table>
+        <thead>
+            <tr>
+                <th>Chain Name</th>
+                <th>Market ID</th>
+                <th>LongF %</th>
+                <th>ShortF %</th>
+                <th>Long USD</th>
+                <th>Short USD</th>
+                <th>{{ doll }}$ Short %</th>
+                <th>h1 $</th>
+                <th>h3 $</th>
+                <th>h3 $</th>
+                <th>h12 $</th>
+                <th>day1 $</th>
+                <th>day7 $</th>
+                <th>day30 $</th>
+                <th>per1 %</th>
+                <th>per7 %</th>
+                <th>per30 %</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+                <td>{{ item[2] }}</td>
+                <td>{{ item[3] }}</td>
+                <td>{{ item[4] }}</td>
+                <td>{{ item[5] }}</td>
+                <td>{{ item[6] }}</td>
+                <td>{{ item[7] }}</td>
+                <td>{{ item[8] }}</td>
+                <td>{{ item[9] }}</td>
+                <td>{{ item[10] }}</td>
+                <td>{{ item[11] }}</td>
+                <td>{{ item[12] }}</td>
+                <td>{{ item[13] }}</td>
+                <td>{{ item[14] }}</td>
+                <td>{{ item[15] }}</td>
+                <td>{{ item[16] }}</td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
