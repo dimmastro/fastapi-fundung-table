@@ -23,6 +23,7 @@
     <form action="/fund" method="get">
         <label for="doll">Enter amount in USD:</label>
         <input type="text" id="doll" name="doll" value="{{ doll }}">
+        <input type="text" id="step" name="step" value="{{ step }}">
         <button type="submit">OK</button>
     </form>
     <table>
@@ -72,5 +73,43 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <br/>
+    <table>
+        <thead>
+            <tr>
+                <th>Chain Name</th>
+                <th>Market ID</th>
+                <th>Max %</th>
+                <th>LongF %</th>
+                <th>ShortF %</th>
+                <th>Long USD</th>
+                <th>Short USD</th>
+                <th>{{ doll }}$</th>
+                <th>{{ doll }}$</th>
+                <th> Short %</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data_opt %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+                <td>{{ item[2] }}</td>
+                <td>{{ item[3] }}</td>
+                <td>{{ item[4] }}</td>
+                <td>{{ item[5] }}</td>
+                <td>{{ item[6] }}</td>
+                <td>{{ item[7] }}</td>
+                <td>{{ item[8] }}</td>
+                <td>{{ item[9] }}</td>
+
+
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
 </body>
 </html>
