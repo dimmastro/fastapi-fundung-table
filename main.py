@@ -56,6 +56,7 @@ chains = {
 @app.get("/fund", response_class=HTMLResponse)
 def get_json_data(request: Request, doll: int=100):
     data = []
+    data_opt = []
     for i, chain in chains.items():
         url = f"https://querier-mainnet.levana.finance/v1/perps/markets?network={chain['net']}&factory={chain['factoryAddress']}"
         print (url)
@@ -68,19 +69,22 @@ def get_json_data(request: Request, doll: int=100):
 
                 chain_name = chain['chain']
                 market_id = market["status"]["market_id"]
-                long_funding = round(float(market["status"]["long_funding"]) * 100)
-                short_funding = round(float(market["status"]["short_funding"]) * 100)
-                long_usd = round(float(market["status"]["long_usd"]))
-                short_usd = round(float(market["status"]["short_usd"]))
+                long_funding = float(market["status"]["long_funding"])
+                short_funding = float(market["status"]["short_funding"])
+                long_usd = float(market["status"]["long_usd"])
+                short_usd = float(market["status"]["short_usd"])
                 status = market["status"]
 
                 lev = 1
                 fee_delta = 0
                 fee_trade = 0.10 / 100 * doll
                 fee_crank = 0.20
-                short100 = - float(status["long_funding"]) * float(status["long_usd"]) / (float(status["short_usd"]) * 1 + doll)
+                funding_rate_max_annualized = float(status["long_funding"]["config"]["funding_rate_max_annualized"])
+                short100_funding_rate_max_annualized = funding_rate_max_annualized * float(status["long_usd"]) / (float(status["long_usd"]) + float(status["short_usd"]) + doll)
+                short100 = - short100_funding_rate_max_annualized * float(status["long_usd"]) / (float(status["short_usd"]) * 1 + doll)
                 if (float(status["long_funding"]) == 0):
-                    short100 = - 0.90 * float(status["long_usd"]) / (float(status["short_usd"]) * 1 + doll)
+                    short100 = - funding_rate_max_annualized * float(status["long_usd"]) / (float(status["short_usd"]) * 1 + doll)
+
                 # short100 = - 0.90 * float(status["long_usd"]) / (float(status["short_usd"]) * 1 + doll)
                 short = short100
 
@@ -95,11 +99,12 @@ def get_json_data(request: Request, doll: int=100):
                 per7 = round(day7 / doll * 365 / 7 * 100)
                 per30 = round(day30 / doll * 365 / 30 * 100)
 
-                data.append((chain_name, market_id, long_funding, short_funding, long_usd, short_usd,
+                data.append((chain_name, market_id, round(long_funding * 100), round(short_funding * 100), round(long_usd), round(short_usd),
                              round(short100 * 100),
                              h1, h3, h6, h12,
                              day1, day7, day30,
                              per1, per7, per30 ))
+                data_opt.append((chain_name, market_id, long_funding, short_funding, long_usd, short_usd))
 
         except requests.RequestException as e:
             raise HTTPException(status_code=500, detail=f"Failed to fetch JSON data: {e}")
