@@ -80,15 +80,21 @@ def get_json_data(request: Request, doll: int=1000, step: int=50):
                 fee_trade = 0.10 / 100 * doll
                 fee_crank = 0.20
                 funding_rate_max_annualized = float(status["config"]["funding_rate_max_annualized"])
+                funding_rate_sensitivity = float(status["config"]["funding_rate_sensitivity"])
+                # print (market_id)
+                # print (funding_rate_max_annualized)
                 # short100_funding_rate_max_annualized = funding_rate_max_annualized * float(status["long_usd"]) / (float(status["long_usd"]) + float(status["short_usd"]) + doll)
-                # if(short100_funding_rate_max_annualized > funding_rate_max_annualized):
-                #     short100_funding_rate_max_annualized = funding_rate_max_annualized
+                short100_funding_rate_max_annualized = float(status["config"]["funding_rate_sensitivity"]) * (float(status["long_usd"]) - float(status["short_usd"]) - doll) / (float(status["long_usd"]) + float(status["short_usd"]) + doll)
+                if(short100_funding_rate_max_annualized > funding_rate_max_annualized):
+                    short100_funding_rate_max_annualized = funding_rate_max_annualized
+                # print(short100_funding_rate_max_annualized)
+                #
                 # short100 = - short100_funding_rate_max_annualized * float(status["long_usd"]) / (float(status["short_usd"]) * 1 + doll)
                 # if (float(status["long_funding"]) == 0):
                 #     short100 = - funding_rate_max_annualized * float(status["long_usd"]) / (float(status["short_usd"]) * 1 + doll)
 
-                short100 = short_plus_doll(funding_rate_max_annualized, long_usd, short_usd, doll)
-                print (short100)
+                short100 = short_plus_doll(funding_rate_max_annualized, funding_rate_sensitivity, long_usd, short_usd, doll)
+                # print (short100)
                 # short100 = - 0.90 * float(status["long_usd"]) / (float(status["short_usd"]) * 1 + doll)
                 short = short100
 
@@ -107,8 +113,9 @@ def get_json_data(request: Request, doll: int=1000, step: int=50):
                              round(short100 * 100),
                              h1, h3, h6, h12,
                              day1, day7, day30,
-                             per1, per7, per30 ))
-                data_opt.append((chain_name, market_id, funding_rate_max_annualized, long_funding, short_funding, long_usd, short_usd, 0, 0, 0, 0))
+                             per1, per7, per30,
+                             short100_funding_rate_max_annualized, funding_rate_sensitivity))
+                data_opt.append((chain_name, market_id, funding_rate_max_annualized, long_funding, short_funding, long_usd, short_usd, 0, 0, 0, funding_rate_sensitivity))
 
         except requests.RequestException as e:
             raise HTTPException(status_code=500, detail=f"Failed to fetch JSON data: {e}")
@@ -130,10 +137,12 @@ def get_json_data(request: Request, doll: int=1000, step: int=50):
 
     return templates.TemplateResponse("item.html", {"request": request, "data": data, "data_opt": data_opt, "doll": doll, "step": step})
 
-def short_plus_doll(funding_rate_max_annualized, long_usd, short_usd, doll):
+def short_plus_doll(funding_rate_max_annualized, funding_rate_sensitivity, long_usd, short_usd, doll):
     # print (funding_rate_max_annualized, long_usd, short_usd, doll)
     # funding_rate_max_annualized = float(status["config"]["funding_rate_max_annualized"])
-    short100_funding_rate_max_annualized = funding_rate_max_annualized * long_usd / (
+    if (short_usd + doll == 0 or  long_usd + short_usd + doll == 0 ):
+        return 0
+    short100_funding_rate_max_annualized = funding_rate_sensitivity * (long_usd - (short_usd + doll)) / (
                 long_usd + short_usd + doll)
     if (short100_funding_rate_max_annualized > funding_rate_max_annualized):
         short100_funding_rate_max_annualized = funding_rate_max_annualized
@@ -156,12 +165,8 @@ def opt_doll(data_opt, total_step=100, step=5 ):
             data_opt[i] = data_opt[i][:8] + (data_opt[i][8] + step,) + data_opt[i][9:]
 
         # Шаг 2: Посчитать значение short_funding_pers для всех строк
-        # def func_abc():
-        #     # Реализуйте вашу функцию func_abc здесь
-        #     pass
-
         for i in range(len(data_opt)):
-            data_opt[i] = data_opt[i][:9] + (short_plus_doll(data_opt[i][2], data_opt[i][5], data_opt[i][6], data_opt[i][8] ),) + data_opt[i][10:]
+            data_opt[i] = data_opt[i][:9] + (short_plus_doll(data_opt[i][2], data_opt[i][10], data_opt[i][5], data_opt[i][6], data_opt[i][8] ),) + data_opt[i][10:]
             # print (short_plus_doll(data_opt[i][2], data_opt[i][5], data_opt[i][5], data_opt[i][8] ))
 
         # Шаг 3: Найти максимальное значение short_funding_pers
@@ -178,5 +183,9 @@ def opt_doll(data_opt, total_step=100, step=5 ):
         for i in range(len(data_opt)):
             data_opt[i] = data_opt[i][:8] + (data_opt[i][7],) + data_opt[i][9:]
 
+        # Шаг 2: Посчитать значение short_funding_pers для всех строк
+        for i in range(len(data_opt)):
+            data_opt[i] = data_opt[i][:9] + (short_plus_doll(data_opt[i][2], data_opt[i][10], data_opt[i][5], data_opt[i][6], data_opt[i][8] ),) + data_opt[i][10:]
+            # print (short_plus_doll(data_opt[i][2], data_opt[i][5], data_opt[i][5], data_opt[i][8] ))
 
     return data_opt
